@@ -3,7 +3,7 @@ from math import ceil
 
 class Scrolling_Background:
     def __init__(self, image_path: str, screen: pygame.Surface, scroll_speed: float = 7.5) -> None:
-        self.image = pygame.image.load(image_path).convert()
+        self.image = pygame.image.load(image_path).convert_alpha()
         self.screen = screen
 
         # Get image and screen dimensions
@@ -34,7 +34,7 @@ class Scrolling_Background:
 
 class FixedBackground:
     def __init__(self, image_src: str, display_surface: pygame.Surface):
-        self.image = pygame.image.load(image_src).convert()
+        self.image = pygame.image.load(image_src).convert_alpha()
         self.screen = display_surface
 
         # Get dimensions
@@ -55,7 +55,7 @@ class FixedBackground:
 class ScrollingTiledBackground:
     def __init__(self, screen: pygame.Surface, tilePath: str, scrollSpeed: float, directionX=0, directionY=0):
         self.screen = screen    
-        self.tile = pygame.image.load(tilePath).convert()
+        self.tile = pygame.image.load(tilePath).convert_alpha()
         self.scrollDirectionX, self.scrollDirectionY = directionX, directionY
         self.scrollSpeedX = scrollSpeed * directionX
         self.scrollSpeedY = scrollSpeed * directionY
@@ -102,7 +102,7 @@ class ScrollingTiledBackground:
 class FixedTiledBackground:
     def __init__(self, screen: pygame.Surface, tilePath: str):
         self.screen = screen    
-        self.tile = pygame.image.load(tilePath).convert()
+        self.tile = pygame.image.load(tilePath).convert_alpha()
         self.image = screen.copy()
 
         self.tileWidth, self.tileHeight = self.tile.get_size()
@@ -119,3 +119,27 @@ class FixedTiledBackground:
 
     def update(self):
         self.screen.blit(self.image, (0, 0))
+
+class ParallaxBackground:
+    def __init__(self, image_paths: list[str], ground_path: str, screen: pygame.Surface, speeds: list[float]) -> None:
+        """
+        Initialize the parallax background.
+
+        :param image_paths: List of image file paths for each layer.
+        :param ground_path: File path for the ground layer.
+        :param screen: The pygame screen surface.
+        :param speeds: List of scroll speeds corresponding to each layer.
+        """
+        self.screen = screen
+        self.layers = [Scrolling_Background(path, screen, speed) for path, speed in zip(image_paths, speeds)]
+        self.ground = pygame.image.load(ground_path).convert_alpha()
+
+    def update(self):
+        """
+        Update and draw all layers in the parallax background.
+        """
+        for layer in self.layers:
+            layer.update()
+
+        # Draw the ground layer at the bottom
+        self.screen.blit(self.ground, (0, self.screen.get_height() - self.ground.get_height()))
